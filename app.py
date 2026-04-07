@@ -41,8 +41,8 @@ lang_dict = {
         "votes_col": "Votes",
         "slogan_col": "Slogan",
         "download_report": "Download Official Report (PDF)",
-        "private_section": "🔐 CEP Private Section (Old)",
-        "private_password": "Enter old CEP password",
+        "private_section": "🔐 CEP Private Section",
+        "private_password": "Enter CEP private password",
         "private_results": "Confidential Results – For CEP Use Only",
         "invalid_password": "Invalid password. Access denied.",
         "footer": "© 2026 GlobalInternet.py – Made in Haiti",
@@ -112,8 +112,8 @@ lang_dict = {
         "company_note": "When you are ready to experiment this online process, contact us.",
         # Password change
         "change_password": "🔐 Change Passwords",
-        "change_app_password": "Change App Login Password (current: 20082010)",
-        "change_private_password": "Change Private Section Password (current: 18032026)",
+        "change_app_password": "Change App Login Password (current: hidden)",
+        "change_private_password": "Change Private Section Password (current: hidden)",
         "new_password": "New password",
         "confirm_password": "Confirm new password",
         "request_code": "Request verification code",
@@ -125,9 +125,11 @@ lang_dict = {
         "password_changed": "Password changed successfully!",
         "email_placeholder": "Your email address",
         "change_logout": "Logout from CEP Dashboard",
-        "cep_login": "CEP President Login",
-        "app_password_label": "Enter CEP App Password (20082010)",
-        "login_btn": "Login",
+        # Login screen
+        "login_title": "CEP President Login",
+        "login_subtitle": "Enter your credentials to access the voting system",
+        "app_password_label": "App Password (default: 20082010)",
+        "login_button": "Login",
         "wrong_app_password": "Wrong password. Access denied."
     },
     "fr": {
@@ -151,8 +153,8 @@ lang_dict = {
         "votes_col": "Votes",
         "slogan_col": "Devise",
         "download_report": "Télécharger le rapport officiel (PDF)",
-        "private_section": "🔐 Section privée du CEP (Ancienne)",
-        "private_password": "Entrez l'ancien mot de passe CEP",
+        "private_section": "🔐 Section privée du CEP",
+        "private_password": "Entrez le mot de passe privé du CEP",
         "private_results": "Résultats confidentiels – Usage exclusif du CEP",
         "invalid_password": "Mot de passe incorrect. Accès refusé.",
         "footer": "© 2026 GlobalInternet.py – Fabriqué en Haïti",
@@ -217,8 +219,8 @@ lang_dict = {
         "company_sale": "Ce logiciel est à vendre : 2 000 $ US pour des élections présidentielles en ligne.",
         "company_note": "Quand vous serez prêts à expérimenter ce processus en ligne, contactez-nous.",
         "change_password": "🔐 Changer les mots de passe",
-        "change_app_password": "Changer le mot de passe de l'application (actuel: 20082010)",
-        "change_private_password": "Changer le mot de passe de la section privée (actuel: 18032026)",
+        "change_app_password": "Changer le mot de passe de l'application (actuel: caché)",
+        "change_private_password": "Changer le mot de passe de la section privée (actuel: caché)",
         "new_password": "Nouveau mot de passe",
         "confirm_password": "Confirmer le nouveau mot de passe",
         "request_code": "Demander un code de vérification",
@@ -230,9 +232,10 @@ lang_dict = {
         "password_changed": "Mot de passe changé avec succès !",
         "email_placeholder": "Votre adresse e-mail",
         "change_logout": "Déconnexion du tableau de bord CEP",
-        "cep_login": "Connexion Président du CEP",
-        "app_password_label": "Entrez le mot de passe CEP (20082010)",
-        "login_btn": "Se connecter",
+        "login_title": "Connexion Président du CEP",
+        "login_subtitle": "Entrez vos identifiants pour accéder au système de vote",
+        "app_password_label": "Mot de passe application (défaut: 20082010)",
+        "login_button": "Se connecter",
         "wrong_app_password": "Mot de passe incorrect. Accès refusé."
     },
     "es": {
@@ -256,8 +259,8 @@ lang_dict = {
         "votes_col": "Votos",
         "slogan_col": "Lema",
         "download_report": "Descargar informe oficial (PDF)",
-        "private_section": "🔐 Sección privada del CEP (Antigua)",
-        "private_password": "Ingrese la antigua contraseña del CEP",
+        "private_section": "🔐 Sección privada del CEP",
+        "private_password": "Ingrese la contraseña privada del CEP",
         "private_results": "Resultados confidenciales – Solo para uso del CEP",
         "invalid_password": "Contraseña incorrecta. Acceso denegado.",
         "footer": "© 2026 GlobalInternet.py – Hecho en Haití",
@@ -322,8 +325,8 @@ lang_dict = {
         "company_sale": "Este software está en venta: $2,000 USD para elecciones presidenciales en línea.",
         "company_note": "Cuando estén listos para experimentar este proceso en línea, contáctenos.",
         "change_password": "🔐 Cambiar contraseñas",
-        "change_app_password": "Cambiar contraseña de acceso a la app (actual: 20082010)",
-        "change_private_password": "Cambiar contraseña de sección privada (actual: 18032026)",
+        "change_app_password": "Cambiar contraseña de acceso a la app (actual: oculta)",
+        "change_private_password": "Cambiar contraseña de sección privada (actual: oculta)",
         "new_password": "Nueva contraseña",
         "confirm_password": "Confirmar nueva contraseña",
         "request_code": "Solicitar código de verificación",
@@ -335,9 +338,10 @@ lang_dict = {
         "password_changed": "¡Contraseña cambiada exitosamente!",
         "email_placeholder": "Su correo electrónico",
         "change_logout": "Cerrar sesión del panel CEP",
-        "cep_login": "Inicio de sesión Presidente del CEP",
-        "app_password_label": "Ingrese la contraseña CEP (20082010)",
-        "login_btn": "Iniciar sesión",
+        "login_title": "Inicio de sesión Presidente del CEP",
+        "login_subtitle": "Ingrese sus credenciales para acceder al sistema de votación",
+        "app_password_label": "Contraseña de aplicación (predeterminada: 20082010)",
+        "login_button": "Iniciar sesión",
         "wrong_app_password": "Contraseña incorrecta. Acceso denegado."
     },
     "ht": {
@@ -361,8 +365,8 @@ lang_dict = {
         "votes_col": "Vòt",
         "slogan_col": "Deviz",
         "download_report": "Telechaje rapò ofisyèl (PDF)",
-        "private_section": "🔐 Seksyon prive CEP (Ansyen)",
-        "private_password": "Antre ansyen modpas CEP la",
+        "private_section": "🔐 Seksyon prive CEP",
+        "private_password": "Antre modpas prive CEP la",
         "private_results": "Rezilta konfidansyèl – Sèlman pou itilizasyon CEP",
         "invalid_password": "Modpas pa bon. Aksè refize.",
         "footer": "© 2026 GlobalInternet.py – Fèt an Ayiti",
@@ -427,8 +431,8 @@ lang_dict = {
         "company_sale": "Lojisyèl sa a ap vann: $2,000 USD pou eleksyon prezidansyèl sou entènèt.",
         "company_note": "Lè nou pare pou fè eksperyans pwosesis sa a sou entènèt, kontakte nou.",
         "change_password": "🔐 Chanje modpas yo",
-        "change_app_password": "Chanje modpas koneksyon aplikasyon an (aktyèl: 20082010)",
-        "change_private_password": "Chanje modpas seksyon prive a (aktyèl: 18032026)",
+        "change_app_password": "Chanje modpas koneksyon aplikasyon an (aktyèl: kache)",
+        "change_private_password": "Chanje modpas seksyon prive a (aktyèl: kache)",
         "new_password": "Nouvo modpas",
         "confirm_password": "Konfime nouvo modpas",
         "request_code": "Mande yon kòd verifikasyon",
@@ -440,9 +444,10 @@ lang_dict = {
         "password_changed": "Modpas chanje avèk siksè!",
         "email_placeholder": "Adrès imèl ou",
         "change_logout": "Dekonekte tablodbò CEP",
-        "cep_login": "Koneksyon Prezidan CEP",
-        "app_password_label": "Antre modpas CEP aplikasyon an (20082010)",
-        "login_btn": "Konekte",
+        "login_title": "Koneksyon Prezidan CEP",
+        "login_subtitle": "Antre enfòmasyon ou pou aksè sistèm vòt la",
+        "app_password_label": "Modpas aplikasyon (default: 20082010)",
+        "login_button": "Konekte",
         "wrong_app_password": "Modpas pa bon. Aksè refize."
     }
 }
@@ -453,13 +458,11 @@ lang_dict = {
 CONFIG_FILE = "config.json"
 
 def load_passwords():
-    """Load passwords from config file, create default if not exists."""
     if os.path.exists(CONFIG_FILE):
         with open(CONFIG_FILE, "r") as f:
             config = json.load(f)
             return config.get("app_password", "20082010"), config.get("private_password", "18032026")
     else:
-        # Default passwords
         config = {"app_password": "20082010", "private_password": "18032026"}
         with open(CONFIG_FILE, "w") as f:
             json.dump(config, f)
@@ -470,11 +473,8 @@ def save_passwords(app_pwd, private_pwd):
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f)
 
-# Load initial passwords
-APP_PASSWORD, PRIVATE_PASSWORD = load_passwords()
-
 # -----------------------------
-# Database functions (unchanged from before)
+# Database functions (unchanged)
 # -----------------------------
 def init_db():
     conn = sqlite3.connect("election.db")
@@ -743,13 +743,13 @@ def is_election_over():
     return datetime.datetime.now() >= get_election_deadline()
 
 # -----------------------------
-# Admin Dashboard (same as before but with password change added)
+# Admin Dashboard (with password change)
 # -----------------------------
 def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
     st.markdown(f"## {t['admin_dashboard']}")
     st.info(t['admin_welcome'])
 
-    # ---- LIVE MONITORING SECTION ----
+    # ---- LIVE MONITORING ----
     st.markdown(f"### {t['live_monitoring']}")
     col1, col2 = st.columns(2)
     with col1:
@@ -802,7 +802,7 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
     
     st.divider()
 
-    # ---- DETAILED VOTES (PRIVATE, ANONYMIZED) ----
+    # ---- DETAILED VOTES ----
     st.markdown(f"### {t['detailed_votes']}")
     detailed_df = get_detailed_votes()
     if not detailed_df.empty:
@@ -819,9 +819,8 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
     
     st.divider()
 
-    # ---- PASSWORD CHANGE SECTION ----
+    # ---- PASSWORD CHANGE ----
     st.markdown(f"### {t['change_password']}")
-    # Change App Password
     with st.expander(t['change_app_password']):
         email = st.text_input(t['email_placeholder'], value="deslandes78@gmail.com", key="app_email")
         new_pwd = st.text_input(t['new_password'], type="password", key="new_app_pwd")
@@ -837,12 +836,10 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
             elif new_pwd != confirm_pwd:
                 st.error(t['password_mismatch'])
             else:
-                # Save new app password
                 save_passwords(new_pwd, current_private_pwd)
                 st.success(t['password_changed'])
                 st.rerun()
     
-    # Change Private Password
     with st.expander(t['change_private_password']):
         email2 = st.text_input(t['email_placeholder'], value="deslandes78@gmail.com", key="private_email")
         new_pwd2 = st.text_input(t['new_password'], type="password", key="new_private_pwd")
@@ -863,7 +860,7 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
                 st.rerun()
     st.divider()
 
-    # --- Add New Candidate ---
+    # ---- ADD CANDIDATE ----
     with st.expander(t['admin_add_candidate']):
         with st.form("add_candidate_form"):
             col1, col2 = st.columns(2)
@@ -901,7 +898,7 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
                 else:
                     st.error("At least the name in all four languages is required.")
 
-    # --- List and manage existing candidates ---
+    # ---- LIST CANDIDATES ----
     st.subheader(t['admin_candidate_list'])
     df_admin = get_all_candidates_admin()
     if df_admin.empty:
@@ -944,30 +941,60 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
             st.divider()
 
 # -----------------------------
+# Login screen
+# -----------------------------
+def login_screen(t):
+    st.markdown("""
+        <style>
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    st.image("https://flagcdn.com/w320/ht.png", width=100)
+    st.markdown(f"## {t['login_title']}")
+    st.markdown(f"### {t['title']}")
+    st.markdown(f"*{t['login_subtitle']}*")
+    pwd = st.text_input(t['app_password_label'], type="password")
+    if st.button(t['login_button']):
+        current_app, _ = load_passwords()
+        if pwd == current_app:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error(t['wrong_app_password'])
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# -----------------------------
 # Main app
 # -----------------------------
 init_db()
 migrate_db()
 generate_demo_candidates()
 
-# Sidebar with company info (displayed always)
-st.sidebar.image("https://flagcdn.com/w320/ht.png", width=80)
-st.sidebar.markdown(f"### {lang_dict['en']['company_name']}")
-st.sidebar.markdown(f"**{lang_dict['en']['company_owner']}**")
-st.sidebar.markdown(f"{lang_dict['en']['company_contact']}")
-st.sidebar.markdown(f"{lang_dict['en']['company_email']}")
-st.sidebar.markdown(f"*{lang_dict['en']['company_rights']}*")
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"💰 **{lang_dict['en']['company_sale']}**")
-st.sidebar.markdown(f"📢 {lang_dict['en']['company_note']}")
-st.sidebar.markdown("---")
-st.sidebar.caption("April 2026")
-
-# Language selector
+# Language selector (visible even before login)
 lang = st.sidebar.selectbox("🌐 Language", options=["en", "fr", "es", "ht"], format_func=lambda x: {"en":"English","fr":"Français","es":"Español","ht":"Kreyòl"}[x])
 t = lang_dict[lang]
 
-# Update sidebar with selected language (overwrite English texts)
+# Check authentication
+if not st.session_state.get("authenticated", False):
+    login_screen(t)
+    st.stop()
+
+# -----------------------------
+# Authenticated user sees the full app
+# -----------------------------
+
+# Sidebar company info
+st.sidebar.image("https://flagcdn.com/w320/ht.png", width=80)
 st.sidebar.markdown(f"### {t['company_name']}")
 st.sidebar.markdown(f"**{t['company_owner']}**")
 st.sidebar.markdown(f"{t['company_contact']}")
@@ -977,7 +1004,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"💰 **{t['company_sale']}**")
 st.sidebar.markdown(f"📢 {t['company_note']}")
 
-# Main title and flag (professional start page)
+# Main title and flag
 col_title, col_flag = st.columns([3, 1])
 with col_title:
     st.title(t["title"])
@@ -985,7 +1012,7 @@ with col_title:
 with col_flag:
     st.image("https://flagcdn.com/w320/ht.png", width=120)
 
-# Election deadline display
+# Election deadline
 deadline = get_election_deadline()
 now = datetime.datetime.now()
 if is_election_over():
@@ -997,7 +1024,7 @@ else:
     seconds = remaining.seconds % 60
     st.info(f"{t['time_remaining']}: {hours:02d}h {minutes:02d}m {seconds:02d}s")
 
-# Voting logic (public)
+# Voting interface (public)
 voter_id = st.session_state.get("voter_id", None)
 if voter_id is None:
     voter_id = str(uuid.uuid4())
@@ -1064,20 +1091,7 @@ if is_election_over():
         report_buffer = generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang, title_suffix="(Final)")
         st.download_button(t["download_report"], data=report_buffer, file_name=f"election_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
 
-# CEP Login via Sidebar (new password 20082010)
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"### {t['cep_login']}")
-app_pwd_input = st.sidebar.text_input(t['app_password_label'], type="password")
-if st.sidebar.button(t['login_btn']):
-    current_app, current_private = load_passwords()
-    if app_pwd_input == current_app:
-        st.session_state.admin_auth = True
-        st.sidebar.success("Logged in as CEP President")
-        st.rerun()
-    else:
-        st.sidebar.error(t['wrong_app_password'])
-
-# Also keep the old expander for backward compatibility (using private password)
+# Private section (requires separate private password)
 st.markdown("---")
 with st.expander(t["private_section"]):
     st.markdown("---")
@@ -1087,16 +1101,16 @@ with st.expander(t["private_section"]):
     Quand ils seront prêts à expérimenter ce processus en ligne, chez GlobalInternet.py nous construisons des logiciels avec Python.  
     2 codes / Coordonnées : (509)-47385663 / courriel : deslandes78@gmail.com / Avril 2026
     """)
-    old_pwd = st.text_input(t["private_password"], type="password")
-    if st.button("Access Private Section (Old)"):
-        current_app, current_private = load_passwords()
-        if old_pwd == current_private:
+    private_pwd_input = st.text_input(t["private_password"], type="password")
+    if st.button("Access Private Section"):
+        _, current_private = load_passwords()
+        if private_pwd_input == current_private:
             st.session_state.admin_auth = True
             st.rerun()
         else:
             st.error(t["invalid_password"])
 
-# Show admin dashboard if authenticated
+# Show admin dashboard if private section unlocked
 if st.session_state.get("admin_auth", False):
     current_app, current_private = load_passwords()
     admin_dashboard(t, lang, current_app, current_private)
