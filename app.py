@@ -3,17 +3,19 @@ import sqlite3
 import datetime
 import pandas as pd
 import io
+import os
+import hashlib
+import uuid
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
-import hashlib
-import uuid
+from PIL import Image
 
 st.set_page_config(page_title="Haiti Online Voting Software", layout="wide")
 
 # -----------------------------
-# Language dictionary (full)
+# Language dictionary (full + admin strings)
 # -----------------------------
 lang_dict = {
     "en": {
@@ -44,7 +46,44 @@ lang_dict = {
         "footer": "© 2026 GlobalInternet.py – Made in Haiti",
         "choose_candidate": "Choose your candidate",
         "vote_for": "Vote for",
-        "not_specified": "Not specified"   # placeholder for missing party/slogan
+        "not_specified": "Not specified",
+        # Admin dashboard strings
+        "admin_dashboard": "👑 CEP President Dashboard",
+        "admin_welcome": "Welcome, President of the CEP. You can manage candidates below.",
+        "admin_candidate_list": "📋 Current Candidates",
+        "admin_id": "ID",
+        "admin_name": "Name",
+        "admin_party": "Party",
+        "admin_slogan": "Slogan",
+        "admin_votes": "Votes",
+        "admin_symbol": "Symbol",
+        "admin_update_symbol": "✏️ Update Symbol",
+        "admin_delete": "🗑️ Delete",
+        "admin_new_symbol_url": "New image URL (or upload file below)",
+        "admin_upload_image": "Or upload an image file (JPEG/PNG)",
+        "admin_update_btn": "Update Symbol",
+        "admin_delete_confirm": "Are you sure you want to delete this candidate? This action cannot be undone and will remove all votes for them.",
+        "admin_delete_btn": "Yes, delete candidate",
+        "admin_add_candidate": "➕ Add New Candidate",
+        "admin_name_en": "Name (English)",
+        "admin_name_fr": "Name (French)",
+        "admin_name_es": "Name (Spanish)",
+        "admin_name_ht": "Name (Kreyòl)",
+        "admin_party_en": "Party (English)",
+        "admin_party_fr": "Party (French)",
+        "admin_party_es": "Party (Spanish)",
+        "admin_party_ht": "Party (Kreyòl)",
+        "admin_slogan_en": "Slogan (English)",
+        "admin_slogan_fr": "Slogan (French)",
+        "admin_slogan_es": "Slogan (Spanish)",
+        "admin_slogan_ht": "Slogan (Kreyòl)",
+        "admin_symbol_url": "Candidate image URL (or upload file)",
+        "admin_upload_symbol": "Upload image file",
+        "admin_add_btn": "Add Candidate",
+        "admin_add_success": "Candidate added successfully!",
+        "admin_update_success": "Symbol updated successfully!",
+        "admin_delete_success": "Candidate deleted successfully!",
+        "admin_error": "An error occurred."
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -74,7 +113,43 @@ lang_dict = {
         "footer": "© 2026 GlobalInternet.py – Fabriqué en Haïti",
         "choose_candidate": "Choisissez votre candidat",
         "vote_for": "Voter pour",
-        "not_specified": "Non spécifié"
+        "not_specified": "Non spécifié",
+        "admin_dashboard": "👑 Tableau de bord du Président du CEP",
+        "admin_welcome": "Bienvenue, Président du CEP. Vous pouvez gérer les candidats ci-dessous.",
+        "admin_candidate_list": "📋 Candidats actuels",
+        "admin_id": "ID",
+        "admin_name": "Nom",
+        "admin_party": "Parti",
+        "admin_slogan": "Devise",
+        "admin_votes": "Votes",
+        "admin_symbol": "Symbole",
+        "admin_update_symbol": "✏️ Mettre à jour le symbole",
+        "admin_delete": "🗑️ Supprimer",
+        "admin_new_symbol_url": "Nouvelle URL d'image (ou déposer un fichier ci-dessous)",
+        "admin_upload_image": "Ou déposer une image (JPEG/PNG)",
+        "admin_update_btn": "Mettre à jour",
+        "admin_delete_confirm": "Voulez-vous vraiment supprimer ce candidat ? Cette action est irréversible et supprimera tous ses votes.",
+        "admin_delete_btn": "Oui, supprimer",
+        "admin_add_candidate": "➕ Ajouter un candidat",
+        "admin_name_en": "Nom (anglais)",
+        "admin_name_fr": "Nom (français)",
+        "admin_name_es": "Nom (espagnol)",
+        "admin_name_ht": "Nom (kreyòl)",
+        "admin_party_en": "Parti (anglais)",
+        "admin_party_fr": "Parti (français)",
+        "admin_party_es": "Parti (espagnol)",
+        "admin_party_ht": "Parti (kreyòl)",
+        "admin_slogan_en": "Devise (anglais)",
+        "admin_slogan_fr": "Devise (français)",
+        "admin_slogan_es": "Devise (espagnol)",
+        "admin_slogan_ht": "Devise (kreyòl)",
+        "admin_symbol_url": "URL de l'image du candidat (ou déposer fichier)",
+        "admin_upload_symbol": "Déposer une image",
+        "admin_add_btn": "Ajouter",
+        "admin_add_success": "Candidat ajouté avec succès !",
+        "admin_update_success": "Symbole mis à jour !",
+        "admin_delete_success": "Candidat supprimé !",
+        "admin_error": "Une erreur est survenue."
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -104,7 +179,43 @@ lang_dict = {
         "footer": "© 2026 GlobalInternet.py – Hecho en Haití",
         "choose_candidate": "Elija su candidato",
         "vote_for": "Votar por",
-        "not_specified": "No especificado"
+        "not_specified": "No especificado",
+        "admin_dashboard": "👑 Panel del Presidente del CEP",
+        "admin_welcome": "Bienvenido, Presidente del CEP. Puede gestionar los candidatos abajo.",
+        "admin_candidate_list": "📋 Candidatos actuales",
+        "admin_id": "ID",
+        "admin_name": "Nombre",
+        "admin_party": "Partido",
+        "admin_slogan": "Lema",
+        "admin_votes": "Votos",
+        "admin_symbol": "Símbolo",
+        "admin_update_symbol": "✏️ Actualizar símbolo",
+        "admin_delete": "🗑️ Eliminar",
+        "admin_new_symbol_url": "Nueva URL de imagen (o subir archivo abajo)",
+        "admin_upload_image": "O subir una imagen (JPEG/PNG)",
+        "admin_update_btn": "Actualizar",
+        "admin_delete_confirm": "¿Está seguro de eliminar este candidato? Se eliminarán también todos sus votos.",
+        "admin_delete_btn": "Sí, eliminar",
+        "admin_add_candidate": "➕ Agregar candidato",
+        "admin_name_en": "Nombre (inglés)",
+        "admin_name_fr": "Nombre (francés)",
+        "admin_name_es": "Nombre (español)",
+        "admin_name_ht": "Nombre (kreyòl)",
+        "admin_party_en": "Partido (inglés)",
+        "admin_party_fr": "Partido (francés)",
+        "admin_party_es": "Partido (español)",
+        "admin_party_ht": "Partido (kreyòl)",
+        "admin_slogan_en": "Lema (inglés)",
+        "admin_slogan_fr": "Lema (francés)",
+        "admin_slogan_es": "Lema (español)",
+        "admin_slogan_ht": "Lema (kreyòl)",
+        "admin_symbol_url": "URL de la imagen del candidato (o subir archivo)",
+        "admin_upload_symbol": "Subir imagen",
+        "admin_add_btn": "Agregar",
+        "admin_add_success": "¡Candidato agregado!",
+        "admin_update_success": "¡Símbolo actualizado!",
+        "admin_delete_success": "¡Candidato eliminado!",
+        "admin_error": "Ocurrió un error."
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -134,12 +245,48 @@ lang_dict = {
         "footer": "© 2026 GlobalInternet.py – Fèt an Ayiti",
         "choose_candidate": "Chwazi kandida w",
         "vote_for": "Vote pou",
-        "not_specified": "Pa espesifye"
+        "not_specified": "Pa espesifye",
+        "admin_dashboard": "👑 Tablodbò Prezidan CEP la",
+        "admin_welcome": "Byenveni, Prezidan CEP la. Ou ka jere kandida yo anba a.",
+        "admin_candidate_list": "📋 Kandida aktyèl yo",
+        "admin_id": "ID",
+        "admin_name": "Non",
+        "admin_party": "Patri",
+        "admin_slogan": "Deviz",
+        "admin_votes": "Vòt",
+        "admin_symbol": "Senbòl",
+        "admin_update_symbol": "✏️ Mete ajou senbòl",
+        "admin_delete": "🗑️ Efase",
+        "admin_new_symbol_url": "Nouvo URL imaj (oswa telechaje yon fichye anba a)",
+        "admin_upload_image": "Oswa telechaje yon fichye imaj (JPEG/PNG)",
+        "admin_update_btn": "Mete ajou",
+        "admin_delete_confirm": "Èske w sèten w vle efase kandida sa a? Aksyon sa a pap ka anile epi l ap efase tout vòt li yo.",
+        "admin_delete_btn": "Wi, efase kandida",
+        "admin_add_candidate": "➕ Ajoute yon kandida",
+        "admin_name_en": "Non (angle)",
+        "admin_name_fr": "Non (fransè)",
+        "admin_name_es": "Non (espanyòl)",
+        "admin_name_ht": "Non (kreyòl)",
+        "admin_party_en": "Patri (angle)",
+        "admin_party_fr": "Patri (fransè)",
+        "admin_party_es": "Patri (espanyòl)",
+        "admin_party_ht": "Patri (kreyòl)",
+        "admin_slogan_en": "Deviz (angle)",
+        "admin_slogan_fr": "Deviz (fransè)",
+        "admin_slogan_es": "Deviz (espanyòl)",
+        "admin_slogan_ht": "Deviz (kreyòl)",
+        "admin_symbol_url": "URL imaj kandida a (oswa telechaje fichye)",
+        "admin_upload_symbol": "Telechaje imaj",
+        "admin_add_btn": "Ajoute",
+        "admin_add_success": "Kandida ajoute avèk siksè!",
+        "admin_update_success": "Senbòl mete ajou!",
+        "admin_delete_success": "Kandida efase!",
+        "admin_error": "Yon erè te rive."
     }
 }
 
 # -----------------------------
-# Database setup with migration
+# Database functions
 # -----------------------------
 def init_db():
     conn = sqlite3.connect("election.db")
@@ -176,19 +323,16 @@ def migrate_db():
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
     c.execute("PRAGMA table_info(candidates)")
-    existing_columns = [col[1] for col in c.fetchall()]
-    required_columns = ["name_en", "name_fr", "name_es", "name_ht",
-                        "party_en", "party_fr", "party_es", "party_ht",
-                        "slogan_en", "slogan_fr", "slogan_es", "slogan_ht"]
-    for col in required_columns:
-        if col not in existing_columns:
+    existing = [col[1] for col in c.fetchall()]
+    required = ["name_en", "name_fr", "name_es", "name_ht",
+                "party_en", "party_fr", "party_es", "party_ht",
+                "slogan_en", "slogan_fr", "slogan_es", "slogan_ht"]
+    for col in required:
+        if col not in existing:
             c.execute(f"ALTER TABLE candidates ADD COLUMN {col} TEXT")
     conn.commit()
     conn.close()
 
-# -----------------------------
-# Candidate management
-# -----------------------------
 def add_candidate(name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol):
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
@@ -199,23 +343,36 @@ def add_candidate(name_en, name_fr, name_es, name_ht, party_en, party_fr, party_
     conn.commit()
     conn.close()
 
-def get_candidates(lang):
-    """Return candidates DataFrame with None replaced by translated placeholder."""
+def update_candidate_symbol(candidate_id, new_symbol):
+    conn = sqlite3.connect("election.db")
+    c = conn.cursor()
+    c.execute("UPDATE candidates SET symbol = ? WHERE id = ?", (new_symbol, candidate_id))
+    conn.commit()
+    conn.close()
+
+def delete_candidate(candidate_id):
+    conn = sqlite3.connect("election.db")
+    c = conn.cursor()
+    # Delete votes for this candidate
+    c.execute("DELETE FROM votes WHERE candidate_id = ?", (candidate_id,))
+    # Delete candidate
+    c.execute("DELETE FROM candidates WHERE id = ?", (candidate_id,))
+    conn.commit()
+    conn.close()
+
+def get_all_candidates_admin():
     conn = sqlite3.connect("election.db")
     df = pd.read_sql_query("SELECT id, name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol, votes FROM candidates ORDER BY id", conn)
     conn.close()
-    
-    # Get the language-specific columns
-    df["name"] = df[f"name_{lang}"]
-    df["party"] = df[f"party_{lang}"]
-    df["slogan"] = df[f"slogan_{lang}"]
-    
-    # Replace None / NaN with translated placeholder
-    placeholder = lang_dict[lang]["not_specified"]
-    df["name"] = df["name"].fillna(placeholder)
-    df["party"] = df["party"].fillna(placeholder)
-    df["slogan"] = df["slogan"].fillna(placeholder)
-    
+    return df
+
+def get_candidates(lang):
+    conn = sqlite3.connect("election.db")
+    df = pd.read_sql_query("SELECT id, name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol, votes FROM candidates ORDER BY id", conn)
+    conn.close()
+    df["name"] = df[f"name_{lang}"].fillna(lang_dict[lang]["not_specified"])
+    df["party"] = df[f"party_{lang}"].fillna(lang_dict[lang]["not_specified"])
+    df["slogan"] = df[f"slogan_{lang}"].fillna(lang_dict[lang]["not_specified"])
     return df[["id", "name", "party", "slogan", "symbol", "votes"]]
 
 def record_vote(voter_id, department, candidate_id):
@@ -304,7 +461,21 @@ def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_
     return buffer
 
 # -----------------------------
-# Demo candidates with HAITIAN images (fixed)
+# Helper to save uploaded image
+# -----------------------------
+def save_uploaded_image(uploaded_file):
+    if uploaded_file is not None:
+        os.makedirs("candidate_images", exist_ok=True)
+        ext = uploaded_file.name.split('.')[-1]
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        filepath = os.path.join("candidate_images", filename)
+        with open(filepath, "wb") as f:
+            f.write(uploaded_file.getbuffer())
+        return filepath
+    return None
+
+# -----------------------------
+# Demo candidates with HAITIAN images
 # -----------------------------
 def generate_demo_candidates():
     conn = sqlite3.connect("election.db")
@@ -313,7 +484,6 @@ def generate_demo_candidates():
     count = c.fetchone()[0]
     conn.close()
     if count == 0:
-        # All images are free stock photos of Haitian people (Pexels license)
         candidates = [
             ("Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre",
              "Unity Party", "Parti de l'Unité", "Partido de la Unidad", "Patri Inite",
@@ -371,6 +541,95 @@ def is_election_over():
     return datetime.datetime.now() >= get_election_deadline()
 
 # -----------------------------
+# Admin Dashboard (shown after password)
+# -----------------------------
+def admin_dashboard(t):
+    st.markdown(f"## {t['admin_dashboard']}")
+    st.info(t['admin_welcome'])
+
+    # --- Add New Candidate ---
+    with st.expander(t['admin_add_candidate']):
+        with st.form("add_candidate_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                name_en = st.text_input(t['admin_name_en'])
+                name_fr = st.text_input(t['admin_name_fr'])
+                name_es = st.text_input(t['admin_name_es'])
+                name_ht = st.text_input(t['admin_name_ht'])
+                party_en = st.text_input(t['admin_party_en'])
+                party_fr = st.text_input(t['admin_party_fr'])
+                party_es = st.text_input(t['admin_party_es'])
+                party_ht = st.text_input(t['admin_party_ht'])
+            with col2:
+                slogan_en = st.text_input(t['admin_slogan_en'])
+                slogan_fr = st.text_input(t['admin_slogan_fr'])
+                slogan_es = st.text_input(t['admin_slogan_es'])
+                slogan_ht = st.text_input(t['admin_slogan_ht'])
+                symbol_url = st.text_input(t['admin_symbol_url'])
+                uploaded_img = st.file_uploader(t['admin_upload_symbol'], type=["jpg", "jpeg", "png"])
+            
+            submitted = st.form_submit_button(t['admin_add_btn'])
+            if submitted:
+                symbol = symbol_url if symbol_url else ""
+                if uploaded_img:
+                    saved_path = save_uploaded_image(uploaded_img)
+                    if saved_path:
+                        symbol = saved_path
+                if name_en and name_fr and name_es and name_ht:
+                    add_candidate(name_en, name_fr, name_es, name_ht,
+                                  party_en, party_fr, party_es, party_ht,
+                                  slogan_en, slogan_fr, slogan_es, slogan_ht,
+                                  symbol)
+                    st.success(t['admin_add_success'])
+                    st.rerun()
+                else:
+                    st.error("At least the name in all four languages is required.")
+
+    # --- List and manage existing candidates ---
+    st.subheader(t['admin_candidate_list'])
+    df_admin = get_all_candidates_admin()
+    if df_admin.empty:
+        st.write("No candidates found.")
+        return
+
+    for idx, row in df_admin.iterrows():
+        with st.container():
+            col1, col2, col3, col4 = st.columns([1, 2, 2, 1])
+            with col1:
+                try:
+                    st.image(row["symbol"], width=80)
+                except:
+                    st.image("https://via.placeholder.com/80?text=No+Image", width=80)
+            with col2:
+                st.markdown(f"**{row['name_en']}** (ID: {row['id']})")
+                st.caption(f"Party: {row['party_en']}")
+                st.caption(f"Slogan: {row['slogan_en']}")
+                st.caption(f"Votes: {row['votes']}")
+            with col3:
+                # Update symbol
+                st.markdown(f"**{t['admin_update_symbol']}**")
+                new_url = st.text_input(t['admin_new_symbol_url'], key=f"url_{row['id']}")
+                uploaded_file = st.file_uploader(t['admin_upload_image'], type=["jpg","jpeg","png"], key=f"upload_{row['id']}")
+                if st.button(t['admin_update_btn'], key=f"update_{row['id']}"):
+                    new_symbol = new_url if new_url else row['symbol']
+                    if uploaded_file:
+                        saved = save_uploaded_image(uploaded_file)
+                        if saved:
+                            new_symbol = saved
+                    update_candidate_symbol(row['id'], new_symbol)
+                    st.success(t['admin_update_success'])
+                    st.rerun()
+            with col4:
+                # Delete button
+                if st.button(t['admin_delete'], key=f"del_{row['id']}"):
+                    st.warning(t['admin_delete_confirm'])
+                    if st.button(t['admin_delete_btn'], key=f"confirm_del_{row['id']}"):
+                        delete_candidate(row['id'])
+                        st.success(t['admin_delete_success'])
+                        st.rerun()
+            st.divider()
+
+# -----------------------------
 # Main app
 # -----------------------------
 init_db()
@@ -419,7 +678,10 @@ else:
         cols = st.columns(3)
         for idx, row in candidates_df.iterrows():
             with cols[idx % 3]:
-                st.image(row["symbol"], width=100)
+                try:
+                    st.image(row["symbol"], width=100)
+                except:
+                    st.image("https://via.placeholder.com/100?text=No+Image", width=100)
                 st.markdown(f"**{row['name']}**")
                 st.caption(row["party"])
                 st.caption(f"*{row['slogan']}*")
@@ -460,22 +722,18 @@ if is_election_over():
 st.markdown("---")
 with st.expander(t["private_section"]):
     pwd = st.text_input(t["private_password"], type="password")
-    if st.button("Access Private Results"):
+    if st.button("Access Private Section"):
         if pwd == "18032026":
-            st.success("Access granted. Confidential results below.")
-            private_results = get_results(lang)
-            private_neutral = get_neutral_votes()
-            private_total = get_total_votes() + private_neutral
-            if not private_results.empty:
-                private_winner = private_results.iloc[0]
-                st.markdown(f"### {t['winner_text']} **{private_winner['name']}** – {private_winner['votes']} {t['votes_count']}")
-                st.dataframe(private_results[["name", "party", "votes", "slogan"]])
-                st.write(f"**Neutral votes:** {private_neutral}")
-                st.write(f"**Total votes cast:** {private_total}")
-                report_buffer = generate_report(private_results, private_neutral, private_total, private_winner["name"], private_winner["votes"], lang)
-                st.download_button("Download Confidential Report (PDF)", data=report_buffer, file_name=f"confidential_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
+            st.session_state.admin_auth = True
+            st.rerun()
         else:
             st.error(t["invalid_password"])
+
+if st.session_state.get("admin_auth", False):
+    admin_dashboard(t)
+    if st.button("Logout from CEP Dashboard"):
+        st.session_state.admin_auth = False
+        st.rerun()
 
 st.markdown("---")
 st.markdown(f"<center>{t['footer']}</center>", unsafe_allow_html=True)
