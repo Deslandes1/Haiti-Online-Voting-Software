@@ -5,17 +5,15 @@ import pandas as pd
 import io
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 import hashlib
-import random
-from PIL import Image
-import base64
+import uuid
 
 st.set_page_config(page_title="Haiti Online Voting Software", layout="wide")
 
 # -----------------------------
-# Language dictionary
+# Language dictionary (full)
 # -----------------------------
 lang_dict = {
     "en": {
@@ -43,7 +41,9 @@ lang_dict = {
         "private_password": "Enter CEP password to view results before public release",
         "private_results": "Confidential Results – For CEP Use Only",
         "invalid_password": "Invalid password. Access denied.",
-        "footer": "© 2026 GlobalInternet.py – Made in Haiti"
+        "footer": "© 2026 GlobalInternet.py – Made in Haiti",
+        "choose_candidate": "Choose your candidate",
+        "vote_for": "Vote for"
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -70,7 +70,9 @@ lang_dict = {
         "private_password": "Entrez le mot de passe du CEP pour voir les résultats avant publication",
         "private_results": "Résultats confidentiels – Usage exclusif du CEP",
         "invalid_password": "Mot de passe incorrect. Accès refusé.",
-        "footer": "© 2026 GlobalInternet.py – Fabriqué en Haïti"
+        "footer": "© 2026 GlobalInternet.py – Fabriqué en Haïti",
+        "choose_candidate": "Choisissez votre candidat",
+        "vote_for": "Voter pour"
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -97,7 +99,9 @@ lang_dict = {
         "private_password": "Ingrese la contraseña del CEP para ver los resultados antes de la publicación",
         "private_results": "Resultados confidenciales – Solo para uso del CEP",
         "invalid_password": "Contraseña incorrecta. Acceso denegado.",
-        "footer": "© 2026 GlobalInternet.py – Hecho en Haití"
+        "footer": "© 2026 GlobalInternet.py – Hecho en Haití",
+        "choose_candidate": "Elija su candidato",
+        "vote_for": "Votar por"
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -124,7 +128,9 @@ lang_dict = {
         "private_password": "Antre modpas CEP la pou wè rezilta yo anvan piblikasyon",
         "private_results": "Rezilta konfidansyèl – Sèlman pou itilizasyon CEP",
         "invalid_password": "Modpas pa bon. Aksè refize.",
-        "footer": "© 2026 GlobalInternet.py – Fèt an Ayiti"
+        "footer": "© 2026 GlobalInternet.py – Fèt an Ayiti",
+        "choose_candidate": "Chwazi kandida w",
+        "vote_for": "Vote pou"
     }
 }
 
@@ -136,9 +142,18 @@ def init_db():
     c = conn.cursor()
     c.execute("""CREATE TABLE IF NOT EXISTS candidates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        party TEXT,
-        slogan TEXT,
+        name_en TEXT,
+        name_fr TEXT,
+        name_es TEXT,
+        name_ht TEXT,
+        party_en TEXT,
+        party_fr TEXT,
+        party_es TEXT,
+        party_ht TEXT,
+        slogan_en TEXT,
+        slogan_fr TEXT,
+        slogan_es TEXT,
+        slogan_ht TEXT,
         symbol TEXT,
         votes INTEGER DEFAULT 0
     )""")
@@ -153,33 +168,33 @@ def init_db():
     conn.commit()
     conn.close()
 
-# -----------------------------
-# Helper functions
-# -----------------------------
-def hash_voter_id(voter_id):
-    return hashlib.sha256(voter_id.encode()).hexdigest()
-
-def add_candidate(name, party, slogan, symbol):
+def add_candidate(name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol):
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
-    c.execute("INSERT INTO candidates (name, party, slogan, symbol, votes) VALUES (?,?,?,?,0)", (name, party, slogan, symbol))
+    c.execute("""INSERT INTO candidates 
+        (name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol, votes) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0)""",
+        (name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol))
     conn.commit()
     conn.close()
 
-def get_candidates():
+def get_candidates(lang):
     conn = sqlite3.connect("election.db")
-    df = pd.read_sql_query("SELECT * FROM candidates ORDER BY id", conn)
+    df = pd.read_sql_query("SELECT id, name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol, votes FROM candidates ORDER BY id", conn)
     conn.close()
-    return df
+    df["name"] = df[f"name_{lang}"]
+    df["party"] = df[f"party_{lang}"]
+    df["slogan"] = df[f"slogan_{lang}"]
+    return df[["id", "name", "party", "slogan", "symbol", "votes"]]
 
 def record_vote(voter_id, department, candidate_id):
-    hashed = hash_voter_id(voter_id)
+    hashed = hashlib.sha256(voter_id.encode()).hexdigest()
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
     try:
         c.execute("INSERT INTO votes (voter_id, department, candidate_id, timestamp) VALUES (?,?,?,?)",
                   (hashed, department, candidate_id, datetime.datetime.now().isoformat()))
-        if candidate_id != -1:  # -1 is neutral
+        if candidate_id != -1:
             c.execute("UPDATE candidates SET votes = votes + 1 WHERE id = ?", (candidate_id,))
         conn.commit()
         conn.close()
@@ -189,7 +204,7 @@ def record_vote(voter_id, department, candidate_id):
         return False
 
 def has_voted(voter_id):
-    hashed = hash_voter_id(voter_id)
+    hashed = hashlib.sha256(voter_id.encode()).hexdigest()
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
     c.execute("SELECT 1 FROM votes WHERE voter_id = ?", (hashed,))
@@ -197,11 +212,14 @@ def has_voted(voter_id):
     conn.close()
     return result is not None
 
-def get_results():
+def get_results(lang):
     conn = sqlite3.connect("election.db")
-    df = pd.read_sql_query("SELECT name, party, slogan, votes FROM candidates ORDER BY votes DESC", conn)
+    df = pd.read_sql_query("SELECT id, name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, votes FROM candidates ORDER BY votes DESC", conn)
     conn.close()
-    return df
+    df["name"] = df[f"name_{lang}"]
+    df["party"] = df[f"party_{lang}"]
+    df["slogan"] = df[f"slogan_{lang}"]
+    return df[["name", "party", "slogan", "votes"]]
 
 def get_total_votes():
     conn = sqlite3.connect("election.db")
@@ -255,7 +273,7 @@ def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_
     return buffer
 
 # -----------------------------
-# Generate demo candidates (10 AI candidates)
+# Demo candidates with Haitian-looking images
 # -----------------------------
 def generate_demo_candidates():
     conn = sqlite3.connect("election.db")
@@ -264,26 +282,56 @@ def generate_demo_candidates():
     count = c.fetchone()[0]
     conn.close()
     if count == 0:
-        candidates_data = [
-            ("Jean-Claude Pierre", "Unity Party", "For a united Haiti", "https://randomuser.me/api/portraits/men/1.jpg"),
-            ("Marie-Louise Duval", "Hope Alliance", "Hope for tomorrow", "https://randomuser.me/api/portraits/women/2.jpg"),
-            ("Joseph Bernard", "Liberty Movement", "Freedom and justice", "https://randomuser.me/api/portraits/men/3.jpg"),
-            ("Anne-Sophie Michel", "Green Leaf Party", "Ecology and progress", "https://randomuser.me/api/portraits/women/4.jpg"),
-            ("Luc Saint-Vil", "Peasant Front", "Land for all", "https://randomuser.me/api/portraits/men/5.jpg"),
-            ("Michele Delatour", "Women's Power", "Strength in unity", "https://randomuser.me/api/portraits/women/6.jpg"),
-            ("Pierre Richard", "Workers' Party", "Dignity through work", "https://randomuser.me/api/portraits/men/7.jpg"),
-            ("Claudette Jean", "Education First", "Knowledge is power", "https://randomuser.me/api/portraits/women/8.jpg"),
-            ("Emmanuel Charles", "New Deal", "A new beginning", "https://randomuser.me/api/portraits/men/9.jpg"),
-            ("Rosemie Baptiste", "Social Justice", "Equality for all", "https://randomuser.me/api/portraits/women/10.jpg")
+        # All images are free stock photos of Haitian / African-descent individuals
+        candidates = [
+            ("Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre",
+             "Unity Party", "Parti de l'Unité", "Partido de la Unidad", "Patri Inite",
+             "For a united Haiti", "Pour un Haïti uni", "Por un Haití unido", "Pou yon Ayiti ini",
+             "https://cdn.pixabay.com/photo/2016/11/21/12/42/beard-1845166_640.jpg"),
+            ("Marie-Louise Duval", "Marie-Louise Duval", "Marie-Louise Duval", "Marie-Louise Duval",
+             "Hope Alliance", "Alliance Espoir", "Alianza Esperanza", "Ayans Espwa",
+             "Hope for tomorrow", "L'espoir pour demain", "Esperanza para mañana", "Espwa pou demen",
+             "https://cdn.pixabay.com/photo/2017/12/19/20/01/woman-3028792_640.jpg"),
+            ("Joseph Bernard", "Joseph Bernard", "Joseph Bernard", "Joseph Bernard",
+             "Liberty Movement", "Mouvement Liberté", "Movimiento Libertad", "Mouvman Libète",
+             "Freedom and justice", "Liberté et justice", "Libertad y justicia", "Libète ak jistis",
+             "https://cdn.pixabay.com/photo/2020/05/31/19/22/man-5244848_640.jpg"),
+            ("Anne-Sophie Michel", "Anne-Sophie Michel", "Anne-Sophie Michel", "Anne-Sophie Michel",
+             "Green Leaf Party", "Parti Feuille Verte", "Partido Hoja Verde", "Patri Fey Vèt",
+             "Ecology and progress", "Écologie et progrès", "Ecología y progreso", "Ekoloji ak pwogrè",
+             "https://cdn.pixabay.com/photo/2017/10/04/12/15/woman-2815700_640.jpg"),
+            ("Luc Saint-Vil", "Luc Saint-Vil", "Luc Saint-Vil", "Luc Saint-Vil",
+             "Peasant Front", "Front Paysan", "Frente Campesino", "Front Peyizan",
+             "Land for all", "La terre pour tous", "Tierra para todos", "Tè pou tout moun",
+             "https://cdn.pixabay.com/photo/2017/08/01/08/29/man-2562325_640.jpg"),
+            ("Michele Delatour", "Michele Delatour", "Michele Delatour", "Michele Delatour",
+             "Women's Power", "Pouvoir des Femmes", "Poder de la Mujer", "Pouvwa Fanm",
+             "Strength in unity", "La force dans l'unité", "Fuerza en la unidad", "Fòs nan inite",
+             "https://cdn.pixabay.com/photo/2018/02/21/15/06/woman-3170280_640.jpg"),
+            ("Pierre Richard", "Pierre Richard", "Pierre Richard", "Pierre Richard",
+             "Workers' Party", "Parti des Travailleurs", "Partido de los Trabajadores", "Patri Travayè",
+             "Dignity through work", "Dignité par le travail", "Dignidad a través del trabajo", "Diyite atravè travay",
+             "https://cdn.pixabay.com/photo/2018/04/27/08/54/man-3355152_640.jpg"),
+            ("Claudette Jean", "Claudette Jean", "Claudette Jean", "Claudette Jean",
+             "Education First", "Éducation d'abord", "Educación Primero", "Edikasyon an premye",
+             "Knowledge is power", "Le savoir est pouvoir", "El conocimiento es poder", "Konesans se pouvwa",
+             "https://cdn.pixabay.com/photo/2017/12/14/16/21/woman-3019992_640.jpg"),
+            ("Emmanuel Charles", "Emmanuel Charles", "Emmanuel Charles", "Emmanuel Charles",
+             "New Deal", "Nouvelle Donne", "Nuevo Trato", "Nouvo Kontra",
+             "A new beginning", "Un nouveau départ", "Un nuevo comienzo", "Yon nouvo kòmansman",
+             "https://cdn.pixabay.com/photo/2016/11/29/12/06/african-american-1869373_640.jpg"),
+            ("Rosemie Baptiste", "Rosemie Baptiste", "Rosemie Baptiste", "Rosemie Baptiste",
+             "Social Justice", "Justice Sociale", "Justicia Social", "Jistis Sosyal",
+             "Equality for all", "Égalité pour tous", "Igualdad para todos", "Egalite pou tout moun",
+             "https://cdn.pixabay.com/photo/2017/10/04/12/25/woman-2815686_640.jpg")
         ]
-        for name, party, slogan, symbol in candidates_data:
-            add_candidate(name, party, slogan, symbol)
+        for cand in candidates:
+            add_candidate(*cand)
 
 # -----------------------------
-# Election deadline (example: 5 minutes from now for demo, but you can set a fixed date)
+# Election deadline
 # -----------------------------
 def get_election_deadline():
-    # For demo, election ends 5 minutes after app start. Change to a fixed date for real use.
     if "deadline" not in st.session_state:
         st.session_state.deadline = datetime.datetime.now() + datetime.timedelta(minutes=5)
     return st.session_state.deadline
@@ -297,16 +345,13 @@ def is_election_over():
 init_db()
 generate_demo_candidates()
 
-# Language selection
 lang = st.sidebar.selectbox("🌐 Language", options=["en", "fr", "es", "ht"], format_func=lambda x: {"en":"English","fr":"Français","es":"Español","ht":"Kreyòl"}[x])
 t = lang_dict[lang]
 
-# Main header
 st.image("https://flagcdn.com/w320/ht.png", width=100)
 st.title(t["title"])
 st.markdown(f"### {t['subtitle']}")
 
-# Election timer
 deadline = get_election_deadline()
 now = datetime.datetime.now()
 if is_election_over():
@@ -318,10 +363,8 @@ else:
     seconds = remaining.seconds % 60
     st.info(f"{t['time_remaining']}: {hours:02d}h {minutes:02d}m {seconds:02d}s")
 
-# Check if user has voted
 voter_id = st.session_state.get("voter_id", None)
 if voter_id is None:
-    import uuid
     voter_id = str(uuid.uuid4())
     st.session_state.voter_id = voter_id
 
@@ -330,8 +373,7 @@ if has_voted(voter_id):
 elif is_election_over():
     st.error(t["election_over"])
 else:
-    # Voting form
-    col1, col2 = st.columns([2, 1])
+    col1, col2 = st.columns([2,1])
     with col1:
         department = st.selectbox(t["select_dept"], t["departments"])
     with col2:
@@ -339,25 +381,22 @@ else:
         st.write("")
         neutral_vote = st.checkbox(t["neutral"])
 
-    candidates_df = get_candidates()
+    candidates_df = get_candidates(lang)
     if not neutral_vote:
-        st.subheader("🗳️ Choose your candidate")
+        st.subheader(t["choose_candidate"])
         cols = st.columns(3)
-        selected_candidate = None
         for idx, row in candidates_df.iterrows():
             with cols[idx % 3]:
                 st.image(row["symbol"], width=100)
                 st.markdown(f"**{row['name']}**")
-                st.caption(f"{row['party']}")
+                st.caption(row["party"])
                 st.caption(f"*{row['slogan']}*")
-                if st.button(f"Vote for {row['name']}", key=f"vote_{row['id']}"):
-                    selected_candidate = row["id"]
-        if selected_candidate:
-            if record_vote(voter_id, department, selected_candidate):
-                st.success(t["vote_success"])
-                st.rerun()
-            else:
-                st.error("Error recording vote. You may have already voted.")
+                if st.button(f"{t['vote_for']} {row['name']}", key=f"vote_{row['id']}"):
+                    if record_vote(voter_id, department, row["id"]):
+                        st.success(t["vote_success"])
+                        st.rerun()
+                    else:
+                        st.error("Error recording vote. You may have already voted.")
     else:
         if st.button(t["vote_btn"]):
             if record_vote(voter_id, department, -1):
@@ -366,11 +405,10 @@ else:
             else:
                 st.error("Error recording vote. You may have already voted.")
 
-# Results section (only if election over or private section)
 if is_election_over():
     st.markdown("---")
     st.header("📊 Election Results")
-    results_df = get_results()
+    results_df = get_results(lang)
     neutral_votes = get_neutral_votes()
     total_votes = get_total_votes() + neutral_votes
     if not results_df.empty:
@@ -384,18 +422,16 @@ if is_election_over():
         st.write(f"**Neutral votes:** {neutral_votes}")
         st.write(f"**Total votes cast:** {total_votes}")
 
-        # Download report
         report_buffer = generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang)
         st.download_button(t["download_report"], data=report_buffer, file_name=f"election_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
 
-# Private section for CEP
 st.markdown("---")
 with st.expander(t["private_section"]):
     pwd = st.text_input(t["private_password"], type="password")
     if st.button("Access Private Results"):
         if pwd == "18032026":
             st.success("Access granted. Confidential results below.")
-            private_results = get_results()
+            private_results = get_results(lang)
             private_neutral = get_neutral_votes()
             private_total = get_total_votes() + private_neutral
             if not private_results.empty:
@@ -404,7 +440,6 @@ with st.expander(t["private_section"]):
                 st.dataframe(private_results[["name", "party", "votes", "slogan"]])
                 st.write(f"**Neutral votes:** {private_neutral}")
                 st.write(f"**Total votes cast:** {private_total}")
-                # Option to generate report for CEP
                 report_buffer = generate_report(private_results, private_neutral, private_total, private_winner["name"], private_winner["votes"], lang)
                 st.download_button("Download Confidential Report (PDF)", data=report_buffer, file_name=f"confidential_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
         else:
