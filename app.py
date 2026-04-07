@@ -43,7 +43,8 @@ lang_dict = {
         "invalid_password": "Invalid password. Access denied.",
         "footer": "© 2026 GlobalInternet.py – Made in Haiti",
         "choose_candidate": "Choose your candidate",
-        "vote_for": "Vote for"
+        "vote_for": "Vote for",
+        "not_specified": "Not specified"   # placeholder for missing party/slogan
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -72,7 +73,8 @@ lang_dict = {
         "invalid_password": "Mot de passe incorrect. Accès refusé.",
         "footer": "© 2026 GlobalInternet.py – Fabriqué en Haïti",
         "choose_candidate": "Choisissez votre candidat",
-        "vote_for": "Voter pour"
+        "vote_for": "Voter pour",
+        "not_specified": "Non spécifié"
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -101,7 +103,8 @@ lang_dict = {
         "invalid_password": "Contraseña incorrecta. Acceso denegado.",
         "footer": "© 2026 GlobalInternet.py – Hecho en Haití",
         "choose_candidate": "Elija su candidato",
-        "vote_for": "Votar por"
+        "vote_for": "Votar por",
+        "not_specified": "No especificado"
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -130,7 +133,8 @@ lang_dict = {
         "invalid_password": "Modpas pa bon. Aksè refize.",
         "footer": "© 2026 GlobalInternet.py – Fèt an Ayiti",
         "choose_candidate": "Chwazi kandida w",
-        "vote_for": "Vote pou"
+        "vote_for": "Vote pou",
+        "not_specified": "Pa espesifye"
     }
 }
 
@@ -140,7 +144,6 @@ lang_dict = {
 def init_db():
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
-    # Create candidates table if not exists (with all required columns)
     c.execute("""CREATE TABLE IF NOT EXISTS candidates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name_en TEXT,
@@ -170,10 +173,8 @@ def init_db():
     conn.close()
 
 def migrate_db():
-    """Add missing columns to candidates table if they don't exist."""
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
-    # Get existing columns
     c.execute("PRAGMA table_info(candidates)")
     existing_columns = [col[1] for col in c.fetchall()]
     required_columns = ["name_en", "name_fr", "name_es", "name_ht",
@@ -199,12 +200,22 @@ def add_candidate(name_en, name_fr, name_es, name_ht, party_en, party_fr, party_
     conn.close()
 
 def get_candidates(lang):
+    """Return candidates DataFrame with None replaced by translated placeholder."""
     conn = sqlite3.connect("election.db")
     df = pd.read_sql_query("SELECT id, name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol, votes FROM candidates ORDER BY id", conn)
     conn.close()
+    
+    # Get the language-specific columns
     df["name"] = df[f"name_{lang}"]
     df["party"] = df[f"party_{lang}"]
     df["slogan"] = df[f"slogan_{lang}"]
+    
+    # Replace None / NaN with translated placeholder
+    placeholder = lang_dict[lang]["not_specified"]
+    df["name"] = df["name"].fillna(placeholder)
+    df["party"] = df["party"].fillna(placeholder)
+    df["slogan"] = df["slogan"].fillna(placeholder)
+    
     return df[["id", "name", "party", "slogan", "symbol", "votes"]]
 
 def record_vote(voter_id, department, candidate_id):
@@ -236,9 +247,9 @@ def get_results(lang):
     conn = sqlite3.connect("election.db")
     df = pd.read_sql_query("SELECT id, name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, votes FROM candidates ORDER BY votes DESC", conn)
     conn.close()
-    df["name"] = df[f"name_{lang}"]
-    df["party"] = df[f"party_{lang}"]
-    df["slogan"] = df[f"slogan_{lang}"]
+    df["name"] = df[f"name_{lang}"].fillna(lang_dict[lang]["not_specified"])
+    df["party"] = df[f"party_{lang}"].fillna(lang_dict[lang]["not_specified"])
+    df["slogan"] = df[f"slogan_{lang}"].fillna(lang_dict[lang]["not_specified"])
     return df[["name", "party", "slogan", "votes"]]
 
 def get_total_votes():
@@ -274,7 +285,7 @@ def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_
     data = [[t["candidate_col"], t["party_col"], t["votes_col"], t["slogan_col"]]]
     for _, row in results_df.iterrows():
         data.append([row["name"], row["party"], str(row["votes"]), row["slogan"]])
-    data.append(["Neutral", "-", str(neutral_votes), "-"])
+    data.append([t["neutral"], "-", str(neutral_votes), "-"])
     data.append(["Total", "-", str(total_votes), "-"])
 
     table = Table(data)
@@ -293,7 +304,7 @@ def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_
     return buffer
 
 # -----------------------------
-# Demo candidates with HAITIAN-LOOKING images (REPLACED)
+# Demo candidates with HAITIAN images (fixed)
 # -----------------------------
 def generate_demo_candidates():
     conn = sqlite3.connect("election.db")
@@ -302,7 +313,7 @@ def generate_demo_candidates():
     count = c.fetchone()[0]
     conn.close()
     if count == 0:
-        # All images below are free stock photos of Haitian people (Pexels license)
+        # All images are free stock photos of Haitian people (Pexels license)
         candidates = [
             ("Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre",
              "Unity Party", "Parti de l'Unité", "Partido de la Unidad", "Patri Inite",
@@ -363,7 +374,7 @@ def is_election_over():
 # Main app
 # -----------------------------
 init_db()
-migrate_db()          # Add missing columns if any
+migrate_db()
 generate_demo_candidates()
 
 lang = st.sidebar.selectbox("🌐 Language", options=["en", "fr", "es", "ht"], format_func=lambda x: {"en":"English","fr":"Français","es":"Español","ht":"Kreyòl"}[x])
