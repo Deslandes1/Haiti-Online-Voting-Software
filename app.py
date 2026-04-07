@@ -83,7 +83,17 @@ lang_dict = {
         "admin_add_success": "Candidate added successfully!",
         "admin_update_success": "Symbol updated successfully!",
         "admin_delete_success": "Candidate deleted successfully!",
-        "admin_error": "An error occurred."
+        "admin_error": "An error occurred.",
+        # Live monitoring strings
+        "live_monitoring": "📡 Live Election Monitoring",
+        "current_leader": "🏅 Current Leader",
+        "total_votes_cast": "🗳️ Total votes cast",
+        "neutral_votes": "⚪ Neutral votes",
+        "quick_report": "📄 Download Quick Progress Report (PDF)",
+        "last_refresh": "Last refresh",
+        "refresh_button": "🔄 Refresh Live Results",
+        "election_end_time": "Election ends at",
+        "current_time": "Current server time"
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -149,7 +159,16 @@ lang_dict = {
         "admin_add_success": "Candidat ajouté avec succès !",
         "admin_update_success": "Symbole mis à jour !",
         "admin_delete_success": "Candidat supprimé !",
-        "admin_error": "Une erreur est survenue."
+        "admin_error": "Une erreur est survenue.",
+        "live_monitoring": "📡 Surveillance en direct du vote",
+        "current_leader": "🏅 Leader actuel",
+        "total_votes_cast": "🗳️ Total des votes exprimés",
+        "neutral_votes": "⚪ Votes neutres",
+        "quick_report": "📄 Télécharger le rapport de progression (PDF)",
+        "last_refresh": "Dernier rafraîchissement",
+        "refresh_button": "🔄 Actualiser les résultats",
+        "election_end_time": "L'élection se termine à",
+        "current_time": "Heure actuelle du serveur"
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -215,7 +234,16 @@ lang_dict = {
         "admin_add_success": "¡Candidato agregado!",
         "admin_update_success": "¡Símbolo actualizado!",
         "admin_delete_success": "¡Candidato eliminado!",
-        "admin_error": "Ocurrió un error."
+        "admin_error": "Ocurrió un error.",
+        "live_monitoring": "📡 Monitoreo en vivo de la votación",
+        "current_leader": "🏅 Líder actual",
+        "total_votes_cast": "🗳️ Total de votos emitidos",
+        "neutral_votes": "⚪ Votos neutrales",
+        "quick_report": "📄 Descargar informe de progreso (PDF)",
+        "last_refresh": "Última actualización",
+        "refresh_button": "🔄 Actualizar resultados",
+        "election_end_time": "La elección termina a las",
+        "current_time": "Hora actual del servidor"
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -281,7 +309,16 @@ lang_dict = {
         "admin_add_success": "Kandida ajoute avèk siksè!",
         "admin_update_success": "Senbòl mete ajou!",
         "admin_delete_success": "Kandida efase!",
-        "admin_error": "Yon erè te rive."
+        "admin_error": "Yon erè te rive.",
+        "live_monitoring": "📡 Siveyans vòt an dirè",
+        "current_leader": "🏅 Moun ki gen plis vòt kounye a",
+        "total_votes_cast": "🗳️ Total vòt yo",
+        "neutral_votes": "⚪ Vòt net",
+        "quick_report": "📄 Telechaje rapò pwogrè (PDF)",
+        "last_refresh": "Dènye rafrechisman",
+        "refresh_button": "🔄 Rafrechi rezilta yo",
+        "election_end_time": "Eleksyon an fini a",
+        "current_time": "Lè aktyèl serve a"
     }
 }
 
@@ -353,9 +390,7 @@ def update_candidate_symbol(candidate_id, new_symbol):
 def delete_candidate(candidate_id):
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
-    # Delete votes for this candidate
     c.execute("DELETE FROM votes WHERE candidate_id = ?", (candidate_id,))
-    # Delete candidate
     c.execute("DELETE FROM candidates WHERE id = ?", (candidate_id,))
     conn.commit()
     conn.close()
@@ -425,14 +460,14 @@ def get_neutral_votes():
     conn.close()
     return neutral
 
-def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang):
+def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang, title_suffix=""):
     t = lang_dict[lang]
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
     styles = getSampleStyleSheet()
     story = []
 
-    story.append(Paragraph(t["title"], styles['Title']))
+    story.append(Paragraph(f"{t['title']} {title_suffix}", styles['Title']))
     story.append(Spacer(1, 12))
     story.append(Paragraph(f"{t['winner_text']} {winner_name} ({winner_votes} {t['votes_count']})", styles['Heading2']))
     story.append(Spacer(1, 12))
@@ -541,13 +576,89 @@ def is_election_over():
     return datetime.datetime.now() >= get_election_deadline()
 
 # -----------------------------
+# Live Monitoring Section
+# -----------------------------
+def live_monitoring_section(t):
+    st.markdown(f"## {t['live_monitoring']}")
+    
+    # Get live data
+    results_df = get_results("en")  # use English for internal but display names in current language? Actually we need current language
+    # To respect language, we should get results in the selected lang (t is already language-specific)
+    # But get_results uses lang parameter. We'll use the current lang from session or pass lang.
+    # We'll use the lang that was selected (global variable `lang`). We'll pass it.
+    # However inside this function we don't have lang directly. We'll get from session_state or pass as argument.
+    # For simplicity, we'll re-fetch using the same lang that was used for the whole app.
+    # We'll store lang in st.session_state when selected.
+    pass
+
+# But we will integrate live monitoring into admin_dashboard and pass lang.
+
+# -----------------------------
 # Admin Dashboard (shown after password)
 # -----------------------------
-def admin_dashboard(t):
+def admin_dashboard(t, lang):
     st.markdown(f"## {t['admin_dashboard']}")
     st.info(t['admin_welcome'])
 
-    # --- Add New Candidate ---
+    # ---- LIVE MONITORING SECTION ----
+    st.markdown(f"### {t['live_monitoring']}")
+    col1, col2 = st.columns(2)
+    with col1:
+        # Get live results
+        results_live = get_results(lang)
+        total_votes_live = get_total_votes()
+        neutral_votes_live = get_neutral_votes()
+        total_cast = total_votes_live + neutral_votes_live
+        
+        if not results_live.empty:
+            leader = results_live.iloc[0]
+            leader_name = leader["name"]
+            leader_votes = leader["votes"]
+            st.metric(t['current_leader'], f"{leader_name} – {leader_votes} {t['votes_count']}")
+        else:
+            st.metric(t['current_leader'], "No candidates")
+        
+        st.metric(t['total_votes_cast'], total_cast)
+        st.metric(t['neutral_votes'], neutral_votes_live)
+        
+        # Show time info
+        deadline = get_election_deadline()
+        now = datetime.datetime.now()
+        st.write(f"**{t['election_end_time']}:** {deadline.strftime('%Y-%m-%d %H:%M:%S')}")
+        st.write(f"**{t['current_time']}:** {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        if not is_election_over():
+            remaining = deadline - now
+            hours = remaining.seconds // 3600
+            minutes = (remaining.seconds % 3600) // 60
+            seconds = remaining.seconds % 60
+            st.info(f"{t['time_remaining']}: {hours:02d}h {minutes:02d}m {seconds:02d}s")
+        else:
+            st.warning(t['election_over'])
+    
+    with col2:
+        # Quick progress report download
+        if not results_live.empty:
+            # Prepare a report with current leader
+            report_buffer = generate_report(results_live, neutral_votes_live, total_cast, leader_name, leader_votes, lang, title_suffix="(Progress Report)")
+            st.download_button(
+                t['quick_report'],
+                data=report_buffer,
+                file_name=f"progress_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                mime="application/pdf"
+            )
+            st.caption(f"{t['last_refresh']}: {datetime.datetime.now().strftime('%H:%M:%S')}")
+            if st.button(t['refresh_button']):
+                st.rerun()
+    
+    # Display a simple bar chart of current votes (optional)
+    if not results_live.empty:
+        st.markdown("#### Current vote distribution")
+        chart_data = results_live.set_index("name")["votes"]
+        st.bar_chart(chart_data)
+    
+    st.divider()
+
+    # --- Add New Candidate (same as before) ---
     with st.expander(t['admin_add_candidate']):
         with st.form("add_candidate_form"):
             col1, col2 = st.columns(2)
@@ -606,7 +717,6 @@ def admin_dashboard(t):
                 st.caption(f"Slogan: {row['slogan_en']}")
                 st.caption(f"Votes: {row['votes']}")
             with col3:
-                # Update symbol
                 st.markdown(f"**{t['admin_update_symbol']}**")
                 new_url = st.text_input(t['admin_new_symbol_url'], key=f"url_{row['id']}")
                 uploaded_file = st.file_uploader(t['admin_upload_image'], type=["jpg","jpeg","png"], key=f"upload_{row['id']}")
@@ -620,7 +730,6 @@ def admin_dashboard(t):
                     st.success(t['admin_update_success'])
                     st.rerun()
             with col4:
-                # Delete button
                 if st.button(t['admin_delete'], key=f"del_{row['id']}"):
                     st.warning(t['admin_delete_confirm'])
                     if st.button(t['admin_delete_btn'], key=f"confirm_del_{row['id']}"):
@@ -716,7 +825,7 @@ if is_election_over():
         st.write(f"**Neutral votes:** {neutral_votes}")
         st.write(f"**Total votes cast:** {total_votes}")
 
-        report_buffer = generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang)
+        report_buffer = generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang, title_suffix="(Final)")
         st.download_button(t["download_report"], data=report_buffer, file_name=f"election_report_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf", mime="application/pdf")
 
 st.markdown("---")
@@ -730,7 +839,7 @@ with st.expander(t["private_section"]):
             st.error(t["invalid_password"])
 
 if st.session_state.get("admin_auth", False):
-    admin_dashboard(t)
+    admin_dashboard(t, lang)
     if st.button("Logout from CEP Dashboard"):
         st.session_state.admin_auth = False
         st.rerun()
