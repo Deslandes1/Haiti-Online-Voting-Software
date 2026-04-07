@@ -135,11 +135,12 @@ lang_dict = {
 }
 
 # -----------------------------
-# Database setup
+# Database setup with migration
 # -----------------------------
 def init_db():
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
+    # Create candidates table if not exists (with all required columns)
     c.execute("""CREATE TABLE IF NOT EXISTS candidates (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name_en TEXT,
@@ -168,6 +169,25 @@ def init_db():
     conn.commit()
     conn.close()
 
+def migrate_db():
+    """Add missing columns to candidates table if they don't exist."""
+    conn = sqlite3.connect("election.db")
+    c = conn.cursor()
+    # Get existing columns
+    c.execute("PRAGMA table_info(candidates)")
+    existing_columns = [col[1] for col in c.fetchall()]
+    required_columns = ["name_en", "name_fr", "name_es", "name_ht",
+                        "party_en", "party_fr", "party_es", "party_ht",
+                        "slogan_en", "slogan_fr", "slogan_es", "slogan_ht"]
+    for col in required_columns:
+        if col not in existing_columns:
+            c.execute(f"ALTER TABLE candidates ADD COLUMN {col} TEXT")
+    conn.commit()
+    conn.close()
+
+# -----------------------------
+# Candidate management
+# -----------------------------
 def add_candidate(name_en, name_fr, name_es, name_ht, party_en, party_fr, party_es, party_ht, slogan_en, slogan_fr, slogan_es, slogan_ht, symbol):
     conn = sqlite3.connect("election.db")
     c = conn.cursor()
@@ -282,7 +302,6 @@ def generate_demo_candidates():
     count = c.fetchone()[0]
     conn.close()
     if count == 0:
-        # All images are free stock photos of Haitian / African-descent individuals
         candidates = [
             ("Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre",
              "Unity Party", "Parti de l'Unité", "Partido de la Unidad", "Patri Inite",
@@ -343,6 +362,7 @@ def is_election_over():
 # Main app
 # -----------------------------
 init_db()
+migrate_db()          # Add missing columns if any
 generate_demo_candidates()
 
 lang = st.sidebar.selectbox("🌐 Language", options=["en", "fr", "es", "ht"], format_func=lambda x: {"en":"English","fr":"Français","es":"Español","ht":"Kreyòl"}[x])
