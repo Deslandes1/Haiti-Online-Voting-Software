@@ -15,7 +15,7 @@ from PIL import Image
 st.set_page_config(page_title="Haiti Online Voting Software", layout="wide")
 
 # -----------------------------
-# Language dictionary (full + admin strings)
+# Language dictionary (full + admin strings + company info)
 # -----------------------------
 lang_dict = {
     "en": {
@@ -93,7 +93,21 @@ lang_dict = {
         "last_refresh": "Last refresh",
         "refresh_button": "🔄 Refresh Live Results",
         "election_end_time": "Election ends at",
-        "current_time": "Current server time"
+        "current_time": "Current server time",
+        # Detailed votes (private)
+        "detailed_votes": "🔍 Detailed Votes (Anonymized)",
+        "voter_id_col": "Voter ID (Hashed)",
+        "candidate_voted": "Candidate Voted",
+        "department_col": "Department",
+        "timestamp_col": "Timestamp",
+        # Company info sidebar
+        "company_name": "GlobalInternet.py",
+        "company_owner": "Owner: Gesner Deslandes",
+        "company_contact": "Contact: (509)-47385663",
+        "company_email": "Email: deslandes78@gmail.com",
+        "company_rights": "All rights reserved - Proprietary License",
+        "company_sale": "This software is for sale: $2,000 USD for online presidential elections.",
+        "company_note": "When you are ready to experiment this online process, contact us."
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -168,7 +182,19 @@ lang_dict = {
         "last_refresh": "Dernier rafraîchissement",
         "refresh_button": "🔄 Actualiser les résultats",
         "election_end_time": "L'élection se termine à",
-        "current_time": "Heure actuelle du serveur"
+        "current_time": "Heure actuelle du serveur",
+        "detailed_votes": "🔍 Détail des votes (anonymisé)",
+        "voter_id_col": "ID votant (haché)",
+        "candidate_voted": "Candidat choisi",
+        "department_col": "Département",
+        "timestamp_col": "Horodatage",
+        "company_name": "GlobalInternet.py",
+        "company_owner": "Propriétaire: Gesner Deslandes",
+        "company_contact": "Contact: (509)-47385663",
+        "company_email": "Courriel: deslandes78@gmail.com",
+        "company_rights": "Tous droits réservés - Licence propriétaire",
+        "company_sale": "Ce logiciel est à vendre : 2 000 $ US pour des élections présidentielles en ligne.",
+        "company_note": "Quand vous serez prêts à expérimenter ce processus en ligne, contactez-nous."
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -243,7 +269,19 @@ lang_dict = {
         "last_refresh": "Última actualización",
         "refresh_button": "🔄 Actualizar resultados",
         "election_end_time": "La elección termina a las",
-        "current_time": "Hora actual del servidor"
+        "current_time": "Hora actual del servidor",
+        "detailed_votes": "🔍 Votos detallados (anonimizados)",
+        "voter_id_col": "ID votante (hash)",
+        "candidate_voted": "Candidato votado",
+        "department_col": "Departamento",
+        "timestamp_col": "Marca de tiempo",
+        "company_name": "GlobalInternet.py",
+        "company_owner": "Propietario: Gesner Deslandes",
+        "company_contact": "Contacto: (509)-47385663",
+        "company_email": "Correo: deslandes78@gmail.com",
+        "company_rights": "Todos los derechos reservados - Licencia privada",
+        "company_sale": "Este software está en venta: $2,000 USD para elecciones presidenciales en línea.",
+        "company_note": "Cuando estén listos para experimentar este proceso en línea, contáctenos."
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -318,7 +356,19 @@ lang_dict = {
         "last_refresh": "Dènye rafrechisman",
         "refresh_button": "🔄 Rafrechi rezilta yo",
         "election_end_time": "Eleksyon an fini a",
-        "current_time": "Lè aktyèl serve a"
+        "current_time": "Lè aktyèl serve a",
+        "detailed_votes": "🔍 Detay vòt (anonim)",
+        "voter_id_col": "ID votan (hash)",
+        "candidate_voted": "Kandida vote",
+        "department_col": "Depatman",
+        "timestamp_col": "Dat/ Lè",
+        "company_name": "GlobalInternet.py",
+        "company_owner": "Pwopriyetè: Gesner Deslandes",
+        "company_contact": "Kontak: (509)-47385663",
+        "company_email": "Imèl: deslandes78@gmail.com",
+        "company_rights": "Tout dwa rezève - Lisans pwopriyetè",
+        "company_sale": "Lojisyèl sa a ap vann: $2,000 USD pou eleksyon prezidansyèl sou entènèt.",
+        "company_note": "Lè nou pare pou fè eksperyans pwosesis sa a sou entènèt, kontakte nou."
     }
 }
 
@@ -460,6 +510,24 @@ def get_neutral_votes():
     conn.close()
     return neutral
 
+def get_detailed_votes():
+    """Return all votes with hashed voter_id, candidate name, department, timestamp."""
+    conn = sqlite3.connect("election.db")
+    # Join votes with candidates to get candidate name (in English for admin view)
+    query = """
+        SELECT v.voter_id, v.department, v.timestamp, 
+               CASE 
+                   WHEN v.candidate_id = -1 THEN 'Neutral'
+                   ELSE c.name_en 
+               END as candidate_name
+        FROM votes v
+        LEFT JOIN candidates c ON v.candidate_id = c.id
+        ORDER BY v.timestamp DESC
+    """
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
+
 def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_votes, lang, title_suffix=""):
     t = lang_dict[lang]
     buffer = io.BytesIO()
@@ -576,24 +644,6 @@ def is_election_over():
     return datetime.datetime.now() >= get_election_deadline()
 
 # -----------------------------
-# Live Monitoring Section
-# -----------------------------
-def live_monitoring_section(t):
-    st.markdown(f"## {t['live_monitoring']}")
-    
-    # Get live data
-    results_df = get_results("en")  # use English for internal but display names in current language? Actually we need current language
-    # To respect language, we should get results in the selected lang (t is already language-specific)
-    # But get_results uses lang parameter. We'll use the current lang from session or pass lang.
-    # We'll use the lang that was selected (global variable `lang`). We'll pass it.
-    # However inside this function we don't have lang directly. We'll get from session_state or pass as argument.
-    # For simplicity, we'll re-fetch using the same lang that was used for the whole app.
-    # We'll store lang in st.session_state when selected.
-    pass
-
-# But we will integrate live monitoring into admin_dashboard and pass lang.
-
-# -----------------------------
 # Admin Dashboard (shown after password)
 # -----------------------------
 def admin_dashboard(t, lang):
@@ -604,7 +654,6 @@ def admin_dashboard(t, lang):
     st.markdown(f"### {t['live_monitoring']}")
     col1, col2 = st.columns(2)
     with col1:
-        # Get live results
         results_live = get_results(lang)
         total_votes_live = get_total_votes()
         neutral_votes_live = get_neutral_votes()
@@ -621,7 +670,6 @@ def admin_dashboard(t, lang):
         st.metric(t['total_votes_cast'], total_cast)
         st.metric(t['neutral_votes'], neutral_votes_live)
         
-        # Show time info
         deadline = get_election_deadline()
         now = datetime.datetime.now()
         st.write(f"**{t['election_end_time']}:** {deadline.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -636,9 +684,7 @@ def admin_dashboard(t, lang):
             st.warning(t['election_over'])
     
     with col2:
-        # Quick progress report download
         if not results_live.empty:
-            # Prepare a report with current leader
             report_buffer = generate_report(results_live, neutral_votes_live, total_cast, leader_name, leader_votes, lang, title_suffix="(Progress Report)")
             st.download_button(
                 t['quick_report'],
@@ -650,7 +696,6 @@ def admin_dashboard(t, lang):
             if st.button(t['refresh_button']):
                 st.rerun()
     
-    # Display a simple bar chart of current votes (optional)
     if not results_live.empty:
         st.markdown("#### Current vote distribution")
         chart_data = results_live.set_index("name")["votes"]
@@ -658,7 +703,25 @@ def admin_dashboard(t, lang):
     
     st.divider()
 
-    # --- Add New Candidate (same as before) ---
+    # ---- DETAILED VOTES (PRIVATE, ANONYMIZED) ----
+    st.markdown(f"### {t['detailed_votes']}")
+    detailed_df = get_detailed_votes()
+    if not detailed_df.empty:
+        # Rename columns to match language
+        detailed_df_display = detailed_df.rename(columns={
+            "voter_id": t['voter_id_col'],
+            "department": t['department_col'],
+            "timestamp": t['timestamp_col'],
+            "candidate_name": t['candidate_voted']
+        })
+        st.dataframe(detailed_df_display)
+        st.caption("Note: Voter IDs are hashed (SHA-256) to ensure anonymity. No personal information is stored.")
+    else:
+        st.write("No votes have been cast yet.")
+    
+    st.divider()
+
+    # --- Add New Candidate ---
     with st.expander(t['admin_add_candidate']):
         with st.form("add_candidate_form"):
             col1, col2 = st.columns(2)
@@ -745,8 +808,31 @@ init_db()
 migrate_db()
 generate_demo_candidates()
 
+# Sidebar with company info
+st.sidebar.image("https://flagcdn.com/w320/ht.png", width=80)
+st.sidebar.markdown(f"### {lang_dict['en']['company_name']}")
+st.sidebar.markdown(f"**{lang_dict['en']['company_owner']}**")
+st.sidebar.markdown(f"{lang_dict['en']['company_contact']}")
+st.sidebar.markdown(f"{lang_dict['en']['company_email']}")
+st.sidebar.markdown(f"*{lang_dict['en']['company_rights']}*")
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"💰 **{lang_dict['en']['company_sale']}**")
+st.sidebar.markdown(f"📢 {lang_dict['en']['company_note']}")
+st.sidebar.markdown("---")
+st.sidebar.caption("April 2026")
+
 lang = st.sidebar.selectbox("🌐 Language", options=["en", "fr", "es", "ht"], format_func=lambda x: {"en":"English","fr":"Français","es":"Español","ht":"Kreyòl"}[x])
 t = lang_dict[lang]
+
+# Update sidebar with selected language
+st.sidebar.markdown(f"### {t['company_name']}")
+st.sidebar.markdown(f"**{t['company_owner']}**")
+st.sidebar.markdown(f"{t['company_contact']}")
+st.sidebar.markdown(f"{t['company_email']}")
+st.sidebar.markdown(f"*{t['company_rights']}*")
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"💰 **{t['company_sale']}**")
+st.sidebar.markdown(f"📢 {t['company_note']}")
 
 st.image("https://flagcdn.com/w320/ht.png", width=100)
 st.title(t["title"])
@@ -830,6 +916,14 @@ if is_election_over():
 
 st.markdown("---")
 with st.expander(t["private_section"]):
+    st.markdown("---")
+    # Display the French message about software sale inside the private section
+    st.info("""
+    **Message from GlobalInternet.py:**  
+    J'ai développé ce logiciel pour le gouvernement haïtien et il est à vendre à 2 000 $ US pour des élections présidentielles en ligne.  
+    Quand ils seront prêts à expérimenter ce processus en ligne, chez GlobalInternet.py nous construisons des logiciels avec Python.  
+    2 codes / Coordonnées : (509)-47385663 / courriel : deslandes78@gmail.com / Avril 2026
+    """)
     pwd = st.text_input(t["private_password"], type="password")
     if st.button("Access Private Section"):
         if pwd == "18032026":
@@ -845,4 +939,4 @@ if st.session_state.get("admin_auth", False):
         st.rerun()
 
 st.markdown("---")
-st.markdown(f"<center>{t['footer']}</center>", unsafe_allow_html=True)
+st.markdown(f"<center>{t['footer']}<br>{t['company_name']} – {t['company_owner']} – {t['company_contact']}</center>", unsafe_allow_html=True)
