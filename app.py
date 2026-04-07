@@ -130,7 +130,9 @@ lang_dict = {
         "login_subtitle": "Enter your credentials to access the voting system",
         "app_password_label": "App Password (default: 20082010)",
         "login_button": "Login",
-        "wrong_app_password": "Wrong password. Access denied."
+        "wrong_app_password": "Wrong password. Access denied.",
+        # Main logout
+        "logout_button": "Logout from App"
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -236,7 +238,8 @@ lang_dict = {
         "login_subtitle": "Entrez vos identifiants pour accéder au système de vote",
         "app_password_label": "Mot de passe application (défaut: 20082010)",
         "login_button": "Se connecter",
-        "wrong_app_password": "Mot de passe incorrect. Accès refusé."
+        "wrong_app_password": "Mot de passe incorrect. Accès refusé.",
+        "logout_button": "Déconnexion de l'application"
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -342,7 +345,8 @@ lang_dict = {
         "login_subtitle": "Ingrese sus credenciales para acceder al sistema de votación",
         "app_password_label": "Contraseña de aplicación (predeterminada: 20082010)",
         "login_button": "Iniciar sesión",
-        "wrong_app_password": "Contraseña incorrecta. Acceso denegado."
+        "wrong_app_password": "Contraseña incorrecta. Acceso denegado.",
+        "logout_button": "Cerrar sesión de la aplicación"
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -448,7 +452,8 @@ lang_dict = {
         "login_subtitle": "Antre enfòmasyon ou pou aksè sistèm vòt la",
         "app_password_label": "Modpas aplikasyon (default: 20082010)",
         "login_button": "Konekte",
-        "wrong_app_password": "Modpas pa bon. Aksè refize."
+        "wrong_app_password": "Modpas pa bon. Aksè refize.",
+        "logout_button": "Dekonekte aplikasyon an"
     }
 }
 
@@ -993,7 +998,7 @@ if not st.session_state.get("authenticated", False):
 # Authenticated user sees the full app
 # -----------------------------
 
-# Sidebar company info
+# Sidebar company info and logout button
 st.sidebar.image("https://flagcdn.com/w320/ht.png", width=80)
 st.sidebar.markdown(f"### {t['company_name']}")
 st.sidebar.markdown(f"**{t['company_owner']}**")
@@ -1003,6 +1008,11 @@ st.sidebar.markdown(f"*{t['company_rights']}*")
 st.sidebar.markdown("---")
 st.sidebar.markdown(f"💰 **{t['company_sale']}**")
 st.sidebar.markdown(f"📢 {t['company_note']}")
+st.sidebar.markdown("---")
+if st.sidebar.button(t['logout_button']):
+    st.session_state.authenticated = False
+    st.session_state.admin_auth = False
+    st.rerun()
 
 # Main title and flag
 col_title, col_flag = st.columns([3, 1])
