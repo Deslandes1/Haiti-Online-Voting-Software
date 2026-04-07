@@ -293,7 +293,7 @@ def generate_report(results_df, neutral_votes, total_votes, winner_name, winner_
     return buffer
 
 # -----------------------------
-# Demo candidates with Haitian-looking images
+# Demo candidates with HAITIAN-LOOKING images (REPLACED)
 # -----------------------------
 def generate_demo_candidates():
     conn = sqlite3.connect("election.db")
@@ -302,47 +302,48 @@ def generate_demo_candidates():
     count = c.fetchone()[0]
     conn.close()
     if count == 0:
+        # All images below are free stock photos of Haitian people (Pexels license)
         candidates = [
             ("Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre", "Jean-Claude Pierre",
              "Unity Party", "Parti de l'Unité", "Partido de la Unidad", "Patri Inite",
              "For a united Haiti", "Pour un Haïti uni", "Por un Haití unido", "Pou yon Ayiti ini",
-             "https://cdn.pixabay.com/photo/2016/11/21/12/42/beard-1845166_640.jpg"),
+             "https://images.pexels.com/photos/2380796/pexels-photo-2380796.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Marie-Louise Duval", "Marie-Louise Duval", "Marie-Louise Duval", "Marie-Louise Duval",
              "Hope Alliance", "Alliance Espoir", "Alianza Esperanza", "Ayans Espwa",
              "Hope for tomorrow", "L'espoir pour demain", "Esperanza para mañana", "Espwa pou demen",
-             "https://cdn.pixabay.com/photo/2017/12/19/20/01/woman-3028792_640.jpg"),
+             "https://images.pexels.com/photos/2380794/pexels-photo-2380794.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Joseph Bernard", "Joseph Bernard", "Joseph Bernard", "Joseph Bernard",
              "Liberty Movement", "Mouvement Liberté", "Movimiento Libertad", "Mouvman Libète",
              "Freedom and justice", "Liberté et justice", "Libertad y justicia", "Libète ak jistis",
-             "https://cdn.pixabay.com/photo/2020/05/31/19/22/man-5244848_640.jpg"),
+             "https://images.pexels.com/photos/3772629/pexels-photo-3772629.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Anne-Sophie Michel", "Anne-Sophie Michel", "Anne-Sophie Michel", "Anne-Sophie Michel",
              "Green Leaf Party", "Parti Feuille Verte", "Partido Hoja Verde", "Patri Fey Vèt",
              "Ecology and progress", "Écologie et progrès", "Ecología y progreso", "Ekoloji ak pwogrè",
-             "https://cdn.pixabay.com/photo/2017/10/04/12/15/woman-2815700_640.jpg"),
+             "https://images.pexels.com/photos/2773895/pexels-photo-2773895.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Luc Saint-Vil", "Luc Saint-Vil", "Luc Saint-Vil", "Luc Saint-Vil",
              "Peasant Front", "Front Paysan", "Frente Campesino", "Front Peyizan",
              "Land for all", "La terre pour tous", "Tierra para todos", "Tè pou tout moun",
-             "https://cdn.pixabay.com/photo/2017/08/01/08/29/man-2562325_640.jpg"),
+             "https://images.pexels.com/photos/2552134/pexels-photo-2552134.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Michele Delatour", "Michele Delatour", "Michele Delatour", "Michele Delatour",
              "Women's Power", "Pouvoir des Femmes", "Poder de la Mujer", "Pouvwa Fanm",
              "Strength in unity", "La force dans l'unité", "Fuerza en la unidad", "Fòs nan inite",
-             "https://cdn.pixabay.com/photo/2018/02/21/15/06/woman-3170280_640.jpg"),
+             "https://images.pexels.com/photos/4320592/pexels-photo-4320592.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Pierre Richard", "Pierre Richard", "Pierre Richard", "Pierre Richard",
              "Workers' Party", "Parti des Travailleurs", "Partido de los Trabajadores", "Patri Travayè",
              "Dignity through work", "Dignité par le travail", "Dignidad a través del trabajo", "Diyite atravè travay",
-             "https://cdn.pixabay.com/photo/2018/04/27/08/54/man-3355152_640.jpg"),
+             "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Claudette Jean", "Claudette Jean", "Claudette Jean", "Claudette Jean",
              "Education First", "Éducation d'abord", "Educación Primero", "Edikasyon an premye",
              "Knowledge is power", "Le savoir est pouvoir", "El conocimiento es poder", "Konesans se pouvwa",
-             "https://cdn.pixabay.com/photo/2017/12/14/16/21/woman-3019992_640.jpg"),
+             "https://images.pexels.com/photos/3825267/pexels-photo-3825267.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Emmanuel Charles", "Emmanuel Charles", "Emmanuel Charles", "Emmanuel Charles",
              "New Deal", "Nouvelle Donne", "Nuevo Trato", "Nouvo Kontra",
              "A new beginning", "Un nouveau départ", "Un nuevo comienzo", "Yon nouvo kòmansman",
-             "https://cdn.pixabay.com/photo/2016/11/29/12/06/african-american-1869373_640.jpg"),
+             "https://images.pexels.com/photos/2380790/pexels-photo-2380790.jpeg?auto=compress&cs=tinysrgb&w=400"),
             ("Rosemie Baptiste", "Rosemie Baptiste", "Rosemie Baptiste", "Rosemie Baptiste",
              "Social Justice", "Justice Sociale", "Justicia Social", "Jistis Sosyal",
              "Equality for all", "Égalité pour tous", "Igualdad para todos", "Egalite pou tout moun",
-             "https://cdn.pixabay.com/photo/2017/10/04/12/25/woman-2815686_640.jpg")
+             "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400")
         ]
         for cand in candidates:
             add_candidate(*cand)
