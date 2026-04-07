@@ -132,7 +132,9 @@ lang_dict = {
         "login_button": "Login",
         "wrong_app_password": "Wrong password. Access denied.",
         # Main logout
-        "logout_button": "Logout from App"
+        "logout_button": "Logout from App",
+        # New election title for login page top right
+        "election_title": "ELECTION OF THE REPUBLIC OF HAITI"
     },
     "fr": {
         "title": "Logiciel de Vote en Ligne d'Haïti",
@@ -239,7 +241,8 @@ lang_dict = {
         "app_password_label": "Mot de passe application (défaut: 20082010)",
         "login_button": "Se connecter",
         "wrong_app_password": "Mot de passe incorrect. Accès refusé.",
-        "logout_button": "Déconnexion de l'application"
+        "logout_button": "Déconnexion de l'application",
+        "election_title": "ÉLECTION DE LA RÉPUBLIQUE D'HAÏTI"
     },
     "es": {
         "title": "Software de Voto en Línea de Haití",
@@ -346,7 +349,8 @@ lang_dict = {
         "app_password_label": "Contraseña de aplicación (predeterminada: 20082010)",
         "login_button": "Iniciar sesión",
         "wrong_app_password": "Contraseña incorrecta. Acceso denegado.",
-        "logout_button": "Cerrar sesión de la aplicación"
+        "logout_button": "Cerrar sesión de la aplicación",
+        "election_title": "ELECCIÓN DE LA REPÚBLICA DE HAITÍ"
     },
     "ht": {
         "title": "Lojisyèl Vòt sou Entènèt Ayiti",
@@ -453,7 +457,8 @@ lang_dict = {
         "app_password_label": "Modpas aplikasyon (default: 20082010)",
         "login_button": "Konekte",
         "wrong_app_password": "Modpas pa bon. Aksè refize.",
-        "logout_button": "Dekonekte aplikasyon an"
+        "logout_button": "Dekonekte aplikasyon an",
+        "election_title": "ELEKSYON REPIBLIK AYITI"
     }
 }
 
@@ -946,14 +951,23 @@ def admin_dashboard(t, lang, current_app_pwd, current_private_pwd):
             st.divider()
 
 # -----------------------------
-# Login screen
+# Login screen with top-right election title
 # -----------------------------
 def login_screen(t):
+    # Top row with flag (left) and election title (right)
+    col_left, col_right = st.columns([1, 3])
+    with col_left:
+        st.image("https://flagcdn.com/w320/ht.png", width=80)
+    with col_right:
+        st.markdown(f"<h2 style='text-align: right; margin-top: 0;'>{t['election_title']}</h2>", unsafe_allow_html=True)
+    
+    # Centered login container
     st.markdown("""
         <style>
         .login-container {
             max-width: 400px;
             margin: auto;
+            margin-top: 2rem;
             padding: 2rem;
             border-radius: 10px;
             background-color: #f9f9f9;
@@ -964,7 +978,6 @@ def login_screen(t):
     """, unsafe_allow_html=True)
     
     st.markdown('<div class="login-container">', unsafe_allow_html=True)
-    st.image("https://flagcdn.com/w320/ht.png", width=100)
     st.markdown(f"## {t['login_title']}")
     st.markdown(f"### {t['title']}")
     st.markdown(f"*{t['login_subtitle']}*")
@@ -1014,7 +1027,7 @@ if st.sidebar.button(t['logout_button']):
     st.session_state.admin_auth = False
     st.rerun()
 
-# Main title and flag
+# Main title and flag (for authenticated area)
 col_title, col_flag = st.columns([3, 1])
 with col_title:
     st.title(t["title"])
